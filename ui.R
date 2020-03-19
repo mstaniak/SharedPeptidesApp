@@ -11,6 +11,11 @@ ui <- fluidPage(
                  checkboxInput("only_centroid", "Show only centroids",
                                value = TRUE),
                  dataTableOutput("summary_table"),
-                 plotOutput("full_spec"))
+                 plotOutput("full_spec")),
+        tabPanel("Isotopic peaks",
+                 fluidRow(column(4, dataTableOutput("iso_summary")),
+                          column(4, offset = 3, dataTableOutput("iso_dist"))),
+                 dataTableOutput("iso_tbl"),
+                 plotOutput("iso_plot"))
     )
 )

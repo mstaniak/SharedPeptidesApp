@@ -79,5 +79,53 @@ server <- function(input, output) {
                 facet_wrap(rep~precursor_scan, scales = "free")
         }
     })
+
+    output$iso_summary = renderDataTable({
+        iso_summary
+    })
+
+    output$iso_dist = renderDataTable({
+        row_id = input$iso_summary_row_last_clicked
+        if(!is.null(row_id)) {
+            seq = iso_summary[row_id, ]
+            iso_dist = useBRAIN(getAtomsFromSeq(seq))
+            row_detail_id = input$iso_tbl_row_last_clicked
+            if(is.null(row_detail_id)) {
+                out = as.data.frame(iso_dist)
+            } else {
+                charge = unique(iso_tbl_df()$charge[row_detail_id])
+                out = as.data.frame(iso_dist) %>%
+                    mutate(mz = masses/charge + 1.007276)
+            }
+            out %>%
+                mutate_all(function(x) round(x, 4))
+        }
+    })
+
+    iso_tbl_df = reactive({
+        if(is.null(input$iso_summary_row_last_clicked)) {
+            iso
+        } else {
+            iso %>%
+                filter(sequence == iso_summary$sequence[input$iso_summary_row_last_clicked])
+        }
+    })
+
+    output$iso_tbl = renderDataTable({
+        iso_tbl_df()
+    })
+
+    output$iso_plot = renderPlot({
+        row_id = input$iso_tbl_row_last_clicked
+        if(!is.null(row_id)) {
+            current_ms1 = iso_tbl_df()$precursor_scan[row_id]
+            iso %>%
+                filter(precursor_scan == current_ms1) %>%
+                ggplot(aes(x = mz, ymin = 0, ymax = intensity)) +
+                    geom_linerange() +
+                    theme_bw() +
+                    facet_wrap(~as.character(target_precursor_mz), scales = "free")
+        }
+    })
 }
 
