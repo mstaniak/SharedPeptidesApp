@@ -103,11 +103,11 @@ server <- function(input, output) {
     })
 
     iso_tbl_df = reactive({
-        if(is.null(input$iso_summary_row_last_clicked)) {
+        if(is.null(input$iso_summary_rows_selected[1])) {
             iso
         } else {
             iso %>%
-                filter(sequence == iso_summary$sequence[input$iso_summary_row_last_clicked])
+                filter(sequence == iso_summary$sequence[input$iso_summary_rows_selected[1]])
         }
     })
 
