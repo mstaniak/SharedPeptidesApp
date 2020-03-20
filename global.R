@@ -4,13 +4,22 @@ library(tidyr)
 library(DT)
 library(ggplot2)
 library(BiocManager)
+library(stringr)
 options(repos = BiocManager::repositories())
 library(BRAIN)
 library(MALDIquant)
 
 # all_ms1 = readRDS("www/all_precursor_spectra.RDS")
 all_ms1 = readRDS("www/all_ms1_max.RDS")
-iso = readRDS("www/just_isotopic.RDS")
+iso = readRDS("www/just_isotopic.RDS") %>%
+    group_by(rep, precursor_scan, sequence, charge, target_precursor_mz) %>%
+    mutate(mass = charge * (mz - 1.007276)) %>%
+    mutate(diff = 1e6 * abs(mz - target_precursor_mz) / target_precursor_mz) %>%
+    mutate(is_mono = diff == min(diff)) %>%
+    mutate(relative = intensity / sum(intensity * is_mono)) %>%
+    select(-diff, -mass) %>%
+    ungroup()
+           # prop = relative / sum(relative))
 
 peptides_summary = all_ms1 %>%
     select(precursor_scan, target_precursor_mz, charge, sequence, proteins, rep) %>%

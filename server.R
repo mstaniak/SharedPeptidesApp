@@ -112,7 +112,11 @@ server <- function(input, output) {
     })
 
     output$iso_tbl = renderDataTable({
-        iso_tbl_df()
+        iso_tbl_df() %>%
+            mutate_if(is.numeric, function(x) round(x, 4)) %>%
+            mutate(sequence = ifelse(str_length(sequence) > 20,
+                                     paste0(str_sub(sequence, 1, 20), "..."),
+                                     sequence))
     })
 
     output$iso_plot = renderPlot({
@@ -122,10 +126,9 @@ server <- function(input, output) {
             iso %>%
                 filter(precursor_scan == current_ms1) %>%
                 ggplot(aes(x = mz, ymin = 0, ymax = intensity)) +
-                    geom_linerange() +
-                    theme_bw() +
-                    facet_wrap(~as.character(target_precursor_mz), scales = "free")
+                geom_linerange() +
+                theme_bw() +
+                facet_wrap(~as.character(target_precursor_mz), scales = "free")
         }
     })
 }
-
